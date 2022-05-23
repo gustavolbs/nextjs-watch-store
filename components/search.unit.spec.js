@@ -5,7 +5,7 @@ import Search from './search';
 const doSearch = jest.fn();
 
 describe('Search', () => {
-  beforeEach(() => {
+  afterEach(() => {
     jest.clearAllMocks();
   });
 
@@ -42,5 +42,18 @@ describe('Search', () => {
 
     expect(doSearch).toHaveBeenCalledTimes(1);
     expect(doSearch).toHaveBeenCalledWith(inputText);
+  });
+
+  it('should call props.doSearch() when the input is cleared', async () => {
+    render(<Search doSearch={doSearch} />);
+
+    const inputText = 'some text here';
+    const input = screen.getByRole('searchbox');
+
+    await userEvent.type(input, inputText);
+    await userEvent.clear(input);
+
+    expect(doSearch).toHaveBeenCalledTimes(1);
+    expect(doSearch).toHaveBeenCalledWith('');
   });
 });
