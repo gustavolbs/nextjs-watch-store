@@ -1,11 +1,19 @@
 import CartItem from './cart-item';
+import { useCartStore } from '../store/cart';
 
 export default function Cart() {
+  const isOpen = useCartStore((store) => store.state.open);
+  const toggleCart = useCartStore((store) => store.actions.toggle);
+
   return (
-    <div className="fixed right-0 top-0 max-w-xs w-full h-full px-6 py-4 transition duration-300 transform overflow-y-auto bg-white border-l-2 border-gray-300">
+    <div
+      className={`${
+        !isOpen && 'hidden'
+      } fixed right-0 top-0 max-w-xs w-full h-full px-6 py-4 transition duration-300 transform overflow-y-auto bg-white border-l-2 border-gray-300`}
+    >
       <div className="flex items-center justify-between">
         <h3 className="text-2xl font-medium text-gray-700">Your cart</h3>
-        <button className="text-gray-600 focus:outline-none">
+        <button onClick={toggleCart} className="text-gray-600 focus:outline-none">
           <svg
             className="h-5 w-5"
             fill="none"
