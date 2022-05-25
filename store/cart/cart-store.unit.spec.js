@@ -58,7 +58,7 @@ describe('Cart Store', () => {
 
     expect(result.current.state.products).toHaveLength(0);
 
-    for (const product in products) {
+    for (const product of products) {
       act(() => addProduct(product));
     }
 
@@ -70,7 +70,7 @@ describe('Cart Store', () => {
 
     expect(result.current.state.products).toHaveLength(0);
 
-    for (const product in products) {
+    for (const product of products) {
       act(() => addProduct(product));
     }
 
@@ -79,5 +79,16 @@ describe('Cart Store', () => {
     act(() => clearProducts());
 
     expect(result.current.state.products).toHaveLength(0);
+  });
+
+  it('should not add same product twice', () => {
+    const product = server.create('product');
+
+    expect(result.current.state.products).toHaveLength(0);
+
+    act(() => addProduct(product));
+    act(() => addProduct(product));
+
+    expect(result.current.state.products).toHaveLength(1);
   });
 });

@@ -1,42 +1,49 @@
 import create from 'zustand';
+import produce from 'immer';
 
 const initialState = {
   open: false,
   products: [],
 };
 
-export const useCartStore = create((set) => ({
-  state: {
-    ...initialState,
-  },
-  actions: {
-    toggle: () =>
-      set((store) => ({
-        state: {
-          ...store.state,
-          open: !store.state.open,
-        },
-      })),
-    addProduct: (product) =>
-      set((store) => ({
-        state: {
-          ...store.state,
-          open: true,
-          products: [...store.state.products, product],
-        },
-      })),
-    clearProducts: () =>
-      set((store) => ({
-        state: {
-          ...store.state,
-          products: [],
-        },
-      })),
-    reset: () =>
-      set((store) => ({
-        state: {
-          ...initialState,
-        },
-      })),
-  },
-}));
+export const useCartStore = create((set) => {
+  const setState = (fn) => set(produce(fn));
+
+  return {
+    state: {
+      ...initialState,
+    },
+    actions: {
+      toggle: () => {
+        setState(({ state }) => {
+          state.open = !state.open;
+        });
+      },
+      addProduct: (product) => {
+        setState(({ state }) => {
+          const doesntExist = !state.products.find(({ id }) => id === product.id);
+
+          if (doesntExist) {
+            if (!product.quantity) {
+              product.quantity = 1;
+            }
+            state.products.push(product);
+            state.open = true;
+          }
+        });
+      },
+      clearProducts: () =>
+        set((store) => ({
+          state: {
+            ...store.state,
+            products: [],
+          },
+        })),
+      reset: () => {
+        setState((store) => {
+          store.state = initialState;
+        });
+      },
+    },
+  };
+});
