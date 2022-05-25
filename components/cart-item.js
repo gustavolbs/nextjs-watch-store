@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useCartStore } from '../store/cart';
 
 export default function CartItem({ product }) {
   const [quantity, setQuantity] = useState(1);
+  const { removeProduct } = useCartStore((store) => store.actions);
 
   const handleDecrease = () => {
     if (quantity > 0) return setQuantity(quantity - 1);
@@ -22,8 +24,12 @@ export default function CartItem({ product }) {
         />
         <div className="mx-3">
           <h3 className="text-sm text-gray-600">{product.title}</h3>
+          <button data-testid="remove-product" onClick={() => removeProduct(product)}>
+            remove
+          </button>
           <div className="flex items-center mt-2">
             <button
+              data-testid="decrease"
               onClick={handleDecrease}
               className="text-gray-500 focus:outline-none focus:text-gray-600"
             >
@@ -43,6 +49,7 @@ export default function CartItem({ product }) {
               {quantity}
             </span>
             <button
+              data-testid="increase"
               onClick={handleIncrease}
               className="text-gray-500 focus:outline-none focus:text-gray-600"
             >

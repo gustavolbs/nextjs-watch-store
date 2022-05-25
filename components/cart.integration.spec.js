@@ -1,9 +1,12 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act as hooksAct } from '@testing-library/react-hooks';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { useCartStore } from '../store/cart';
 import { makeServer } from '../miragejs/server';
 import { setAutoFreeze } from 'immer';
+import TestRenderer from 'react-test-renderer';
 import Cart from './Cart';
+
+const { act: componentsAct } = TestRenderer;
 
 setAutoFreeze(false);
 
@@ -41,42 +44,56 @@ describe('Cart', () => {
     expect(screen.getByTestId('cart')).toHaveClass('hidden');
   });
 
-  it('should not have css class "hidden" when cart is opened', () => {
-    act(() => toggle());
+  it('should remove css class "hidden" when cart is opened', async () => {
+    await componentsAct(async () => {
+      render(<Cart />);
 
-    render(<Cart />);
+      await fireEvent.click(screen.getByTestId('close-button'));
 
-    expect(screen.getByTestId('cart')).not.toHaveClass('hidden');
+      expect(screen.getByTestId('cart')).not.toHaveClass('hidden');
+    });
   });
 
   it('should close cart when close button is clicked', async () => {
-    act(() => {
+    hooksAct(() => {
       reset(); // reset state
       toggle(); // open cart
     });
 
-    render(<Cart />);
+    await componentsAct(async () => {
+      render(<Cart />);
 
-    const button = screen.getByTestId('close-button');
+      const button = screen.getByTestId('close-button');
 
-    act(() => {
-      fireEvent.click(button); // close cart
+      await fireEvent.click(button); // close cart
+
+      expect(spy).toHaveBeenCalledTimes(2);
+      expect(screen.getByTestId('cart')).toHaveClass('hidden');
     });
-
-    expect(spy).toHaveBeenCalledTimes(2);
-    expect(screen.getByTestId('cart')).toHaveClass('hidden');
   });
 
   it('should display 5 product cards', () => {
     const products = server.createList('product', 5);
 
     for (const product of products) {
-      act(() => addProduct(product));
+      hooksAct(() => addProduct(product));
     }
 
     render(<Cart />);
 
     expect(screen.getByTestId('cart')).not.toHaveClass('hidden');
     expect(screen.getAllByTestId('cart-item')).toHaveLength(5);
+  });
+
+  it('should display "Cart is empty" message is there is no product at cart', () => {
+    hooksAct(() => {
+      reset();
+      toggle();
+    });
+
+    render(<Cart />);
+
+    expect(screen.getByTestId('cart')).not.toHaveClass('hidden');
+    expect(screen.getByText(/Cart is empty$/i)).toBeInTheDocument();
   });
 });

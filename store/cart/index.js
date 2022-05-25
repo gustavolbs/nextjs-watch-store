@@ -24,24 +24,30 @@ export const useCartStore = create((set) => {
           const doesntExist = !state.products.find(({ id }) => id === product.id);
 
           if (doesntExist) {
-            if (!product.quantity) {
-              product.quantity = 1;
-            }
+            // if (!product.quantity) {
+            //   product.quantity = 1;
+            // }
             state.products.push(product);
             state.open = true;
           }
         });
       },
       clearProducts: () =>
-        set((store) => ({
-          state: {
-            ...store.state,
-            products: [],
-          },
-        })),
+        setState(({ state }) => {
+          state.products = [];
+        }),
       reset: () => {
         setState((store) => {
           store.state = initialState;
+        });
+      },
+      removeProduct: (product) => {
+        setState(({ state }) => {
+          const exists = !!state.products.find(({ id }) => id === product.id);
+
+          if (exists) {
+            state.products = state.products.filter(({ id }) => id !== product.id);
+          }
         });
       },
     },

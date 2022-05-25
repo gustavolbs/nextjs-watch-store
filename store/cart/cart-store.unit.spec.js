@@ -8,6 +8,7 @@ describe('Cart Store', () => {
   let toggle;
   let addProduct;
   let clearProducts;
+  let removeProduct;
 
   beforeEach(() => {
     server = makeServer({ environment: 'test' });
@@ -15,6 +16,7 @@ describe('Cart Store', () => {
     toggle = result.current.actions.toggle;
     addProduct = result.current.actions.addProduct;
     clearProducts = result.current.actions.clearProducts;
+    removeProduct = result.current.actions.removeProduct;
   });
 
   afterEach(() => {
@@ -53,7 +55,7 @@ describe('Cart Store', () => {
     expect(result.current.state.products[0]).toEqual(product);
   });
 
-  it('should add 5 products to the list', () => {
+  it('should add 5 products to the list and open the cart', () => {
     const products = server.createList('product', 5);
 
     expect(result.current.state.products).toHaveLength(0);
@@ -63,6 +65,7 @@ describe('Cart Store', () => {
     }
 
     expect(result.current.state.products).toHaveLength(5);
+    expect(result.current.state.open).toBe(true);
   });
 
   it('should clear products', () => {
@@ -90,5 +93,36 @@ describe('Cart Store', () => {
     act(() => addProduct(product));
 
     expect(result.current.state.products).toHaveLength(1);
+  });
+
+  it('should remove a product from the store', () => {
+    const [product1, product2] = server.createList('product', 2);
+
+    act(() => {
+      addProduct(product1);
+      addProduct(product2);
+    });
+
+    expect(result.current.state.products).toHaveLength(2);
+
+    act(() => removeProduct(product1));
+
+    expect(result.current.state.products).toHaveLength(1);
+    expect(result.current.state.products[0]).toEqual(product2);
+  });
+
+  it('should not change products in the cart if provided product is not in the array', () => {
+    const [product1, product2, product3] = server.createList('product', 3);
+
+    act(() => {
+      addProduct(product1);
+      addProduct(product2);
+    });
+
+    expect(result.current.state.products).toHaveLength(2);
+
+    act(() => removeProduct(product3));
+
+    expect(result.current.state.products).toHaveLength(2);
   });
 });

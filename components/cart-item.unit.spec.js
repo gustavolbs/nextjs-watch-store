@@ -1,5 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import { useCartStore } from '../store/cart';
+import { renderHook } from '@testing-library/react-hooks';
+import { setAutoFreeze } from 'immer';
 import CartItem from './cart-item';
+
+setAutoFreeze(false);
 
 const product = {
   title: 'Beautiful watch',
@@ -8,13 +13,15 @@ const product = {
     'https://images.unsplash.com/photo-1495856458515-0637185db551?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=750&q=80',
 };
 
-const addToCart = jest.fn();
-
 const renderCartItem = () => {
   render(<CartItem product={product} />);
 };
 
 describe('CartItem - unit', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('should render the component', () => {
     renderCartItem();
 
@@ -41,7 +48,7 @@ describe('CartItem - unit', () => {
   it('should increase quantity by 1 when second button is clicked', async () => {
     renderCartItem();
 
-    const [_, increaseButton] = screen.getAllByRole('button');
+    const increaseButton = screen.getByTestId('increase');
     const quantity = screen.getByTestId('quantity');
 
     expect(quantity.textContent).toEqual('1');
@@ -53,7 +60,7 @@ describe('CartItem - unit', () => {
   it('should decrease quantity by 1 when second button is clicked', async () => {
     renderCartItem();
 
-    const [decreaseButton] = screen.getAllByRole('button');
+    const decreaseButton = screen.getByTestId('decrease');
     const quantity = screen.getByTestId('quantity');
 
     expect(quantity.textContent).toEqual('1');
@@ -65,7 +72,7 @@ describe('CartItem - unit', () => {
   it('should not go below zero in the quantity', async () => {
     renderCartItem();
 
-    const [decreaseButton] = screen.getAllByRole('button');
+    const decreaseButton = screen.getByTestId('decrease');
     const quantity = screen.getByTestId('quantity');
 
     expect(quantity.textContent).toEqual('1');
@@ -76,5 +83,17 @@ describe('CartItem - unit', () => {
     expect(quantity.textContent).toEqual('0');
     await fireEvent.click(decreaseButton);
     expect(quantity.textContent).toEqual('0');
+  });
+
+  it('should call remove() when remove button is clicked', async () => {
+    const result = renderHook(() => useCartStore()).result;
+    const spy = jest.spyOn(result.current.actions, 'removeProduct');
+    renderCartItem();
+
+    const removeButton = screen.getByTestId('remove-product');
+    await fireEvent.click(removeButton);
+
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(product);
   });
 });
