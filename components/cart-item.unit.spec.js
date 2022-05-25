@@ -39,50 +39,30 @@ describe('CartItem - unit', () => {
     expect(image).toHaveAttribute('alt', product.title);
   });
 
-  it('should display 1 as initial quantity', async () => {
-    renderCartItem();
+  it('should call increase() when increase button is clicked', async () => {
+    const result = renderHook(() => useCartStore()).result;
+    const spy = jest.spyOn(result.current.actions, 'increase');
 
-    expect(screen.getByTestId('quantity').textContent).toEqual('1');
-  });
-
-  it('should increase quantity by 1 when second button is clicked', async () => {
     renderCartItem();
 
     const increaseButton = screen.getByTestId('increase');
-    const quantity = screen.getByTestId('quantity');
-
-    expect(quantity.textContent).toEqual('1');
-
     await fireEvent.click(increaseButton);
-    expect(quantity.textContent).toEqual('2');
+
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(product);
   });
 
-  it('should decrease quantity by 1 when second button is clicked', async () => {
+  it('should call decrease() when decrease button is clicked', async () => {
+    const result = renderHook(() => useCartStore()).result;
+    const spy = jest.spyOn(result.current.actions, 'decrease');
+
     renderCartItem();
 
     const decreaseButton = screen.getByTestId('decrease');
-    const quantity = screen.getByTestId('quantity');
-
-    expect(quantity.textContent).toEqual('1');
-
     await fireEvent.click(decreaseButton);
-    expect(quantity.textContent).toEqual('0');
-  });
 
-  it('should not go below zero in the quantity', async () => {
-    renderCartItem();
-
-    const decreaseButton = screen.getByTestId('decrease');
-    const quantity = screen.getByTestId('quantity');
-
-    expect(quantity.textContent).toEqual('1');
-
-    await fireEvent.click(decreaseButton);
-    expect(quantity.textContent).toEqual('0');
-    await fireEvent.click(decreaseButton);
-    expect(quantity.textContent).toEqual('0');
-    await fireEvent.click(decreaseButton);
-    expect(quantity.textContent).toEqual('0');
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(product);
   });
 
   it('should call remove() when remove button is clicked', async () => {

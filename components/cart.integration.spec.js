@@ -17,6 +17,7 @@ describe('Cart', () => {
   let addProduct;
   let toggle;
   let reset;
+  let clearProducts;
 
   beforeEach(() => {
     server = makeServer({ environment: 'test' });
@@ -24,6 +25,7 @@ describe('Cart', () => {
     toggle = result.current.actions.toggle;
     addProduct = result.current.actions.addProduct;
     reset = result.current.actions.reset;
+    clearProducts = result.current.actions.clearProducts;
     spy = jest.spyOn(result.current.actions, 'toggle');
   });
 
@@ -85,7 +87,7 @@ describe('Cart', () => {
     expect(screen.getAllByTestId('cart-item')).toHaveLength(5);
   });
 
-  it('should display "Cart is empty" message is there is no product at cart', () => {
+  it('should display "Cart is empty" message if is there is no product at cart', () => {
     hooksAct(() => {
       reset();
       toggle();
@@ -95,5 +97,32 @@ describe('Cart', () => {
 
     expect(screen.getByTestId('cart')).not.toHaveClass('hidden');
     expect(screen.getByText(/Cart is empty$/i)).toBeInTheDocument();
+  });
+
+  it('should remove all products when clear cart button is clicked', async () => {
+    const products = server.createList('product', 3);
+
+    for (const product of products) {
+      hooksAct(() => addProduct(product));
+    }
+
+    await componentsAct(async () => {
+      render(<Cart />);
+      expect(screen.getAllByTestId('cart-item')).toHaveLength(3);
+
+      const button = screen.getByRole('button', { name: /Clear cart/i });
+
+      await fireEvent.click(button);
+
+      expect(screen.queryAllByTestId('cart-item')).toHaveLength(0);
+    });
+  });
+
+  it('should not display clear cart button if no products are in the cart', async () => {
+    hooksAct(() => clearProducts());
+
+    render(<Cart />);
+
+    expect(screen.queryByRole('button', { name: /Clear cart/i })).not.toBeInTheDocument();
   });
 });

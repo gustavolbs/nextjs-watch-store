@@ -9,6 +9,8 @@ describe('Cart Store', () => {
   let addProduct;
   let clearProducts;
   let removeProduct;
+  let increase;
+  let decrease;
 
   beforeEach(() => {
     server = makeServer({ environment: 'test' });
@@ -17,6 +19,8 @@ describe('Cart Store', () => {
     addProduct = result.current.actions.addProduct;
     clearProducts = result.current.actions.clearProducts;
     removeProduct = result.current.actions.removeProduct;
+    increase = result.current.actions.increase;
+    decrease = result.current.actions.decrease;
   });
 
   afterEach(() => {
@@ -66,6 +70,62 @@ describe('Cart Store', () => {
 
     expect(result.current.state.products).toHaveLength(5);
     expect(result.current.state.open).toBe(true);
+  });
+
+  it('should assign 1 as initial quantity on addProduct()', () => {
+    const product = server.create('product');
+
+    act(() => addProduct(product));
+
+    expect(result.current.state.products).toHaveLength(1);
+    expect(result.current.state.products[0].quantity).toBe(1);
+  });
+
+  it('should have 1 as quantity when addProduct() is called twice', () => {
+    const product = server.create('product');
+
+    act(() => {
+      addProduct(product);
+      addProduct(product);
+    });
+
+    expect(result.current.state.products).toHaveLength(1);
+    expect(result.current.state.products[0].quantity).toBe(1);
+  });
+
+  it('should increase product quantity', () => {
+    const product = server.create('product');
+
+    act(() => {
+      addProduct(product);
+      increase(product);
+    });
+
+    expect(result.current.state.products[0].quantity).toBe(2);
+  });
+
+  it('should decrease product quantity', () => {
+    const product = server.create('product');
+
+    act(() => {
+      addProduct(product);
+      decrease(product);
+    });
+
+    expect(result.current.state.products[0].quantity).toBe(0);
+  });
+
+  it('should not decrease below zero', () => {
+    const product = server.create('product');
+
+    act(() => {
+      addProduct(product);
+      decrease(product);
+      decrease(product);
+      decrease(product);
+    });
+
+    expect(result.current.state.products[0].quantity).toBe(0);
   });
 
   it('should clear products', () => {

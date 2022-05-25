@@ -5,6 +5,8 @@ export default function Cart() {
   const { open: isOpen, products } = useCartStore((store) => store.state);
   const { toggle: toggleCart, clearProducts } = useCartStore((store) => store.actions);
 
+  const hasProducts = products.length > 0;
+
   return (
     <div
       data-testid="cart"
@@ -14,7 +16,7 @@ export default function Cart() {
     >
       <div className="flex items-center justify-between">
         <h3 className="text-2xl font-medium text-gray-700">Your cart</h3>
-        <button onClick={clearProducts}>Clear cart</button>
+        {hasProducts ? <button onClick={clearProducts}>Clear cart</button> : null}
         <button
           data-testid="close-button"
           onClick={toggleCart}
@@ -37,7 +39,7 @@ export default function Cart() {
       {products.map((product) => (
         <CartItem key={product.id} product={product} />
       ))}
-      {products.length > 0 ? (
+      {hasProducts ? (
         <a className="flex items-center justify-center mt-4 px-3 py-2 bg-blue-600 text-white text-sm uppercase font-medium rounded hover:bg-blue-500 focus:outline-none focus:bg-blue-500">
           <span>Checkout</span>
           <svg
